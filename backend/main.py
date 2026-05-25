@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from transformers import pipeline
+import torch
 
 app = FastAPI()
 
@@ -31,7 +32,8 @@ def home():
 
 classifier = pipeline(
     "text-classification",
-    model="distilbert-base-uncased-finetuned-sst-2-english"
+    model="distilbert-base-uncased-finetuned-sst-2-english",
+    device=-1
 )
 
 
@@ -39,7 +41,8 @@ classifier = pipeline(
 
 classifier_text_generation = pipeline(
     "text-generation",
-    model="distilgpt2"
+    model="distilgpt2",
+    device=-1
 )
 
 
@@ -48,7 +51,8 @@ classifier_text_generation = pipeline(
 classifier_ner = pipeline(
     "ner",
     model="dslim/bert-base-NER",
-    aggregation_strategy="simple"
+    aggregation_strategy="simple",
+    device=-1
 )
 
 
@@ -66,8 +70,10 @@ def sentiment(data: TextInput):
     result = classifier(data.text)
 
     return {
+
         "input": data.text,
         "prediction": result
+
     }
 
 
@@ -77,14 +83,20 @@ def sentiment(data: TextInput):
 def generate(data: TextInput):
 
     result = classifier_text_generation(
+
         data.text,
+
         max_length=50,
+
         num_return_sequences=1
+
     )
 
     return {
+
         "input": data.text,
         "prediction": result
+
     }
 
 
